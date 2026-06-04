@@ -196,6 +196,7 @@
             <div class="panel-border p-4 flex-shrink-0 flex justify-between items-center rounded-md">
                 <span class="c-title text-xl">目前位置:</span>
                 <select id="map-select" class="bg-black c-sys border border-gray-600 py-1 px-2 rounded outline-none cursor-pointer" onchange="game.changeMap(this.value)"></select>
+                <button class="btn-ui c-success border-green-800 hover:bg-green-900 ml-2" onclick="game.saveGame()"><i class="fas fa-save mr-1"></i>存檔</button>
             </div>
             <div class="panel-border p-5 flex-shrink-0 text-center min-h-[110px] flex flex-col justify-center rounded-md bg-gray-900">
                 <div id="target-name" class="c-err font-bold text-2xl mb-4">尋找目標中...</div>
@@ -605,13 +606,14 @@ const game = {
         spells: [], buffs: {},
         settings: { autoHpThreshold: 5, autoHpType: 'potion_red', autoBuyHp: false, autoBuyMp: false, autoBuyWis: false, autoAttack: 'none', autoAttackMpThreshold: 0, autoBuffs: [], autoHealSpell: 'none', autoHealThreshold: 50 },
         currentMap: 'knight_village', targetMonster: null,
-        battleLoop: null, monsterLoop: null, magicLoop: null, regenLoop: null, tickLoop: null,
+        battleLoop: null, monsterLoop: null, magicLoop: null, regenLoop: null, tickLoop: null, autoSaveLoop: null,
         potionCooldown: 0, autoHealCd: 0, enchantTargetKey: null, zombieTick: 0, monsterSpecialTick: 0, antarasDeadUntil: 0
     },
 
     init: function() {
         this.renderMapSelect();
         this.checkSaveFile();
+        window.addEventListener('beforeunload', () => { if (this.state.isPlaying) this.saveGame(); });
     },
 
     renderMapSelect: function() {
@@ -2331,6 +2333,10 @@ const game = {
             if(needUpdate) this.updateUI();
             
         }, 1000);
+        
+        this.state.autoSaveLoop = setInterval(() => {
+            this.saveGame();
+        }, 60000);
     },
     startBattle: function() {
         this.state.isPlaying = true;
